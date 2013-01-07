@@ -2,7 +2,9 @@ __metaclass__ = type
 
 BROADCAST_ADDR = "10.145.2.255:10001"
 
-import multiprocessing
+import threading
+
+import select
 import socket
 
 DEL = "::"
@@ -32,11 +34,15 @@ class Msg:
         return "%s::%s::%s::%s" % (self.src, self.dest, self.content, ','.join(self.passed_from))
 
 
-class Node:
+class Node(threading.Thread):
     def __init__(self, address):
         self.address = address
         self.neighbours = []
         self.sockets = {}
+        threading.Thread.__init__(self)
+
+    def __str__(self):
+        return "Node on address %s" % str(self.address)
 
     def get_socket(self, address):
         if address in self.sockets:
@@ -61,18 +67,21 @@ class Node:
         sock = self.get_socket(msg_obj.dest)
         sock.sendall(msg_obj.to_string())
 
-    def check(self):
+    def receive(self, neigh, msg):
         pass
 
     def run(self):
+        print(self)
         listen = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         listen.bind(self.address)
         listen.listen(5)
         while True:
-            rd, wr, ex = socket.select([listen] + self.sockets.values(), [], [], 1000)
+            rd, wr, ex = select.select([listen] + self.sockets.values(),
+                                       [], [], 1000)
             if listen in rd:
                 newsock = listen.accept()
                 self.sockets[newsock.getpeeraddr()] = newsock
+
             for sock in rd:
                 for neighb, neighbsock in self.sockets.items():
                     if sock == neighbsock:
@@ -87,7 +96,9 @@ if __name__ == '__main__':
     st = m.to_string()
     assert m == Msg.from_string(st)
 
-    # multiprocessing.Process(target=bind_udp).run()
-    # multiprocessing.Process(target=bind_udp).run()
-    # for n in range(10):
-    #     Node("1200%d" % n).run()
+    for n in range(5):
+        addr = ('localhost', 12220 + n)
+        Node(addr).start()
+
+    while True:
+        pass
