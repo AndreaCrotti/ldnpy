@@ -2,6 +2,8 @@ __metaclass__ = type
 
 BROADCAST_ADDR = "10.145.2.255:10001"
 
+from time import sleep
+
 import threading
 
 import select
@@ -100,5 +102,4 @@ if __name__ == '__main__':
         addr = ('localhost', 12220 + n)
         Node(addr).start()
 
-    while True:
-        pass
+    sleep(5)
