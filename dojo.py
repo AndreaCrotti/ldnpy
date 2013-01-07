@@ -3,6 +3,8 @@ __metaclass__ = type
 BROADCAST_ADDR = "10.145.2.255:10001"
 
 import multiprocessing
+import socket
+
 DEL = "::"
 
 
@@ -34,13 +36,17 @@ class Node:
         self.neighbours = []
 
     def route(self, msg):
-        if msg.dest == self.port:
-            print("Received message %s" % str(msg))
-        elif msg.dest in self.neighbours:
-            msg.passed_from.append(self.port)
-            self.send(msg, msg.dest)
+        msg_obj = Msg.from_string(msg)
+        if msg_obj.dest == self.port:
+            print("Received message %s" % str(msg_obj))
+        elif msg_obj.dest in self.neighbours:
+            msg_obj.passed_from.append(self.port)
+            self.send(msg_obj)
         else:
-            not_seen = [x for x in self.neighbours if not x in msg.passed_from]
+            not_seen = [x for x in self.neighbours if not x in msg_obj.passed_from]
+
+    def send(self, msg_obj):
+        pass
 
     def check(self):
         pass
