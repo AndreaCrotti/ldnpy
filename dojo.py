@@ -7,16 +7,19 @@ DEL = "::"
 
 
 class Msg:
-    def __init__(self, src, dest, content):
+    def __init__(self, src, dest, content, passed_from=None):
         self.src = src
         self.dest = dest
         self.content = content
-        self.passed_from = []
+        self.passed_from = passed_from or []
+
+    def __eq__(self, other):
+        return self.src == other.src and self.dest == other.dest
 
     @classmethod
     def from_string(cls, st_repr):
         src, dest, content, passed_from = st_repr.split('::')
-        return cls(Msg(src, dest, content, passed_from.split(',')))
+        return cls(src, dest, content, passed_from.split(','))
 
     def to_string(self):
         return str(self)
@@ -47,5 +50,9 @@ class Node:
 
 
 if __name__ == '__main__':
-    for n in range(10):
-        Node("1200%d" % n).run()
+    m = Msg('19999', '23232', 'content')
+    st = m.to_string()
+    assert m == Msg.from_string(st)
+
+    # for n in range(10):
+    #     Node("1200%d" % n).run()
