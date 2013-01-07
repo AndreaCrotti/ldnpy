@@ -7,6 +7,8 @@ import socket
 
 DEL = "::"
 
+LISTEN_ADDRESS = ('127.0.0.1', 19999)
+
 
 class Msg:
     def __init__(self, src, dest, content, passed_from=None):
@@ -64,11 +66,17 @@ class Node:
     def run(self):
         pass
 
+def bind_udp():
+    udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp.bind(('localhost', 10000))
+
 
 if __name__ == '__main__':
     m = Msg('19999', '23232', 'content')
     st = m.to_string()
     assert m == Msg.from_string(st)
 
+    # multiprocessing.Process(target=bind_udp).run()
+    # multiprocessing.Process(target=bind_udp).run()
     # for n in range(10):
     #     Node("1200%d" % n).run()
