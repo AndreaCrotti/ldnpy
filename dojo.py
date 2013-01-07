@@ -21,4 +21,5 @@ class Node:
 
 
 if __name__ == '__main__':
-    pass
+    for n in range(10):
+        Node("1200%d" % n).run()
