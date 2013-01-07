@@ -58,18 +58,29 @@ class Node:
             not_seen = [x for x in self.neighbours if not x in msg_obj.passed_from]
 
     def send(self, msg_obj):
-        pass
+        sock = self.get_socket(msg_obj.dest)
+        sock.sendall(msg_obj.to_string())
 
     def check(self):
         pass
 
     def run(self):
-        pass
-
-def bind_udp():
-    udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udp.bind(('localhost', 10000))
-
+        listen = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        listen.bind(self.address)
+        listen.listen(5)
+        while True:
+            rd, wr, ex = socket.select([listen] + self.sockets.values(), [], [], 1000)
+            if listen in rd:
+                newsock = listen.accept()
+                self.sockets[newsock.getpeeraddr()] = newsock
+            for sock in rd:
+                for neighb, neighbsock in self.sockets.items():
+                    if sock == neighbsock:
+                        data = sock.read(1024)
+                        if data:
+                            self.receive(neighb, sock.read(1024))
+                        else:
+                            del self.sockets[neighb]
 
 if __name__ == '__main__':
     m = Msg('19999', '23232', 'content')
