@@ -31,16 +31,26 @@ class Msg:
 
 
 class Node:
-    def __init__(self, port):
-        self.port = port
+    def __init__(self, address):
+        self.address = address
         self.neighbours = []
+        self.sockets = {}
+
+    def get_socket(self, address):
+        if address in self.sockets:
+            return self.sockets[address]
+        else:
+            # 127.0.0.1:10002
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect(address)
+            self.sockets[address] = sock
 
     def route(self, msg):
         msg_obj = Msg.from_string(msg)
-        if msg_obj.dest == self.port:
+        if msg_obj.dest == self.address:
             print("Received message %s" % str(msg_obj))
         elif msg_obj.dest in self.neighbours:
-            msg_obj.passed_from.append(self.port)
+            msg_obj.passed_from.append(self.address)
             self.send(msg_obj)
         else:
             not_seen = [x for x in self.neighbours if not x in msg_obj.passed_from]
